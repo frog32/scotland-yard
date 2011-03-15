@@ -41,9 +41,13 @@ class Application(object):
                     module = self.police_module
                 move = module.draw(i,player)
                 player.draw(move, self.graph)
-                if not player.is_x:
-                    self.x.add_ticket(move.ticket)
                 print "%s went to %s by %s" % (player, move.target, move.ticket)
+                if player.is_x:
+                    pass
+                else:
+                    if player.get_position() == self.x.get_position():
+                        raise exceptions.Exception('Mr x geschnappt von %s'% player)
+                    self.x.add_ticket(move.ticket)
     
     def load_map(self):
         self.start_positions = [13, 26, 29, 34, 50, 53, 91, 94, 103, 112, 117, 132, 138, 155, 174, 197, 198]
@@ -130,15 +134,11 @@ class Player(PlayerGeneric):
         setattr(self, ticket_attr, ticket_count - 1)
         self.moves.append(move)
         if self.is_x:
-            print self
             self.update_x()
     
     def get_position(self):
         if len(self.moves):
-            print self.moves
-            print "%s zug gemacht" % self
             return self.moves[-1].target
-        print "erster zug"
         return self.start_node
     
 class InvalidMoveError(exceptions.Exception):
