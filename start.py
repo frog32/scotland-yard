@@ -20,7 +20,7 @@ class Application(object):
             print 'Created %s' % self.x
         for i in range(police_count):
             position, positions = random_select(positions)
-            police = Player(positions, 'Police %s' % (i+1)) # startnode is i for testing purposes
+            police = Player(position, 'Police %s' % (i+1)) # startnode is i for testing purposes
             self.polices.append(police)
             if VERBOSITY >= 1:
                 print 'Created %s' % police
@@ -41,9 +41,7 @@ class Application(object):
                     module = self.police_module
                 move = module.draw(i,player)
                 player.draw(move, self.graph)
-                if player.is_x:
-                    player.update_x(-1)
-                else:
+                if not player.is_x:
                     self.x.add_ticket(move.ticket)
                 print "%s went to %s by %s" % (player, move.target, move.ticket)
     
@@ -60,52 +58,53 @@ class Move(object):
         self.target = target
         self.ticket = ticket
     
+    def __repr__(self):
+        return "Move to %s by %s" % (self.target, self.ticket)
+    
     def clone_hidden(self):
         return Move(None ,self.ticket)
 
 class PlayerGeneric(object):
-    tickets_cab = 10
-    tickets_bus = 8
-    tickets_unerground = 4
-    tickets_black = 0
-    tickets_double = 0
-    moves = []
-    name = None
+    
+    def __init__(self, name):
+        self.tickets_cab = 10
+        self.tickets_bus = 8
+        self.tickets_underground = 4
+        self.tickets_black = 0
+        self.tickets_double = 0
+        self.moves = []
+        self.name = name
+        
     
     def __repr__(self):
         return self.name
 
 class PlayerX(PlayerGeneric):
-    def __init__(self,):
-        self.visible_until_move = -1
-        self.name = "Mr. X"
+    VISIBLE_MOVES = (3,8,13,18)
     
     def update_tickets(self, tickets_double, tickets_cab,
-            tickets_bus, tickets_unerground, tickets_black):
+            tickets_bus, tickets_underground, tickets_black):
         self.tickets_double = tickets_double
         self.tickets_cab = tickets_cab
         self.tickets_bus = tickets_bus
-        self.tickets_unerground = tickets_unerground
+        self.tickets_underground = tickets_underground
         self.tickets_black = tickets_black
     
-    def clear_invisible_moves(self):
-        self.moves = self.moves[:self.visible_until_move+1]
-
 class Player(PlayerGeneric):
     
     def __init__(self, start_node, name='', is_x=False):
+        super(Player,self).__init__(name)
         self.start_node = start_node
-        self.name = name
         self.is_x = is_x
     
     def init_x(self, police_count):
         self.tickets_double = 2
         self.tickets_cab = 4
         self.tickets_bus = 3
-        self.tickets_unerground = 3
+        self.tickets_underground = 3
         self.tickets_black = police_count
-        self.x = PlayerX()
-        self.update_x(0)
+        self.x_pub = PlayerX(self.name)
+        return self.x_pub
     
     def add_ticket(self, ticket_type):
         ticket_attr = 'tickets_%s' % ticket_type
@@ -113,34 +112,36 @@ class Player(PlayerGeneric):
         setattr(self, ticket_attr, ticket_count + 1)
         
     
-    def update_x(self, visible_until_move):
-        self.x.update_tickets(self.tickets_double, self.tickets_cab,
-            self.tickets_bus, self.tickets_unerground, self.tickets_black)
-        if visible_until_move > self.x.visible_until_move:
-            self.x.clear_invisible_moves()
-            for m in self.moves[len(self.x.moves):]:
-                self.x.moves.append(m)
-            self.x.visible_until_move = visible_until_move
+    def update_x(self):
+        self.x_pub.update_tickets(self.tickets_double, self.tickets_cab,
+            self.tickets_bus, self.tickets_underground, self.tickets_black)
+        if len(self.x_pub.moves) + 1 in self.x_pub.VISIBLE_MOVES:
+            self.x_pub.moves.append(self.moves[-1])
         else:
-            for m in self.moves[len(self.x.moves):]:
-                self.x.moves.append(m.clone_hidden())
+            self.x_pub.moves.append(self.moves[-1].clone_hidden())
         
     def draw(self, move, graph):
         ticket_attr = 'tickets_%s' % move.ticket
         ticket_count = getattr(self,ticket_attr)
         if ticket_count < 1:
-            raise InvalidMove("No more %s tickets avaiable." % move.ticket)
+            raise InvalidMoveError("No more %s tickets avaiable." % move.ticket)
         if not move.target in graph.neighbors(self.get_position()):
-            raise InvalidMove()
+            raise InvalidMoveError()
         setattr(self, ticket_attr, ticket_count - 1)
         self.moves.append(move)
+        if self.is_x:
+            print self
+            self.update_x()
     
     def get_position(self):
         if len(self.moves):
+            print self.moves
+            print "%s zug gemacht" % self
             return self.moves[-1].target
+        print "erster zug"
         return self.start_node
     
-class InvalidMove(exceptions.Exception):
+class InvalidMoveError(exceptions.Exception):
     pass    
 
 def random_select(position_list):
@@ -157,7 +158,7 @@ if __name__ == '__main__':
     try:
         for arg in sys.argv[1:]:
             if arg[0:9] == '--police=':
-                rounds = int(arg[9:])
+                police_count = int(arg[9:])
             elif arg == '-v':
                 VERBOSITY += 1
             elif arg[-4:] == '.csv':
