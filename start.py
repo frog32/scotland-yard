@@ -1,6 +1,7 @@
 import exceptions
 import networkx as nx
 import random
+import logging
 
 VERBOSITY = 0
 
@@ -8,32 +9,32 @@ class Application(object):
     police_module, mr_x_module = None, None
     graph = None
     start_positions = []
-    def __init__(self, police_module, mr_x_module, police_count=5):
+    def __init__(self, police_module, mr_x_module, police_count=5, log_core=None, log_mrx=None, log_police=None):
+        self.init_logger(log_core)
         self.load_map()
-        if VERBOSITY >= 1:
-            print 'Created Map'
+        self.logger.debug('Created Map')
         self.polices = []
         position, positions = random_select(self.start_positions[:])
         self.x = Player(position, 'Mr X', True) # start position 
         self.x_pub = self.x.init_x(police_count)
-        if VERBOSITY >= 1:
-            print 'Created %s' % self.x
+        self.logger.debug('Created %s' % self.x)
         for i in range(police_count):
             position, positions = random_select(positions)
             police = Player(position, 'Police %s' % (i+1)) # startnode is i for testing purposes
             self.polices.append(police)
-            if VERBOSITY >= 1:
-                print 'Created %s' % police
+            self.logger.info('Created %s' % police)
         del positions
         self.mr_x_module = mr_x_module(self.graph, self.x, self.polices, Move)
+        self.mr_x_module.init_logger(log_mrx)
         self.police_module = police_module(self.graph, self.x_pub, self.polices, Move)
+        self.police_module.init_logger(log_police)
         # ready to start game
-        print "init completed"
+        self.logger.debug("init completed")
         
     def play(self):
         players = [self.x] + self.polices
         for i in range(22):
-            print "round %s" % i
+            self.logger.info("round %s" % i)
             for player in players:
                 if player.is_x:
                     module = self.mr_x_module
@@ -41,12 +42,13 @@ class Application(object):
                     module = self.police_module
                 move = module.draw(i,player)
                 player.draw(move, self.graph)
-                print "%s went to %s by %s" % (player, move.target, move.ticket)
+                self.logger.info("%s went to %s by %s" % (player, move.target, move.ticket))
                 if player.is_x:
                     pass
                 else:
                     if player.get_position() == self.x.get_position():
-                        raise exceptions.Exception('Mr x geschnappt von %s'% player)
+                        self.logger.info('Mr x geschnappt von %s'% player)
+                        return
                     self.x.add_ticket(move.ticket)
     
     def load_map(self):
@@ -55,6 +57,14 @@ class Application(object):
         for edge in open('maps/kanten.txt'):
             bits = edge.replace('\n','').split(' ')
             self.graph.add_edge(int(bits[0]),int(bits[1]), attr_dict={'ticket':bits[2]})
+    
+    def init_logger(self, level):
+        self.logger = logging.getLogger('start.Application')
+        self.logger.setLevel(log_core)
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
         
 class Move(object):
     TICKETS = ['cab', 'bus', 'underground', 'black']
@@ -142,7 +152,8 @@ class Player(PlayerGeneric):
         return self.start_node
     
 class InvalidMoveError(exceptions.Exception):
-    pass    
+    pass
+
 
 def random_select(position_list):
     r = random.randint(0,len(position_list)-1)
@@ -155,12 +166,19 @@ if __name__ == '__main__':
     from mr_x import MrX
     from police import Police
     police_count = 5
+    log_core = 40
+    log_mrx = 40
+    log_police = 40
     try:
         for arg in sys.argv[1:]:
             if arg[0:9] == '--police=':
                 police_count = int(arg[9:])
-            elif arg == '-v':
-                VERBOSITY += 1
+            elif arg[0:10] == '--log-lvl=':
+                log_core = int(arg[10:])
+            elif arg[0:10] == '--log-mrx=':
+                log_mrx = int(arg[10:])
+            elif arg[0:10] == '--log-pol=':
+                log_police = int(arg[10:])
             elif arg[-4:] == '.csv':
                 NAMES, DISTANCES = read_file(arg)
             else:
@@ -173,5 +191,5 @@ Explanation comes here
 """
         exit()
             
-    application = Application(Police,MrX,police_count=police_count)
+    application = Application(Police,MrX,police_count=police_count, log_core=log_core, log_mrx=log_mrx, log_police=log_police)
     application.play()

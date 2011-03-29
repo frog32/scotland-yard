@@ -1,4 +1,5 @@
 import random
+import logging
 
 class MrX(object):
     
@@ -7,6 +8,14 @@ class MrX(object):
         self.mr_x = mr_x
         self.polices = polices
         self.move_cls = move_cls
+    
+    def init_logger(self, level):
+        self.logger = logging.getLogger('mr_x.MrX')
+        self.logger.setLevel(level)
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
     
     def draw(self, round, who):
         choices = self.graph.neighbors(who.get_position())
