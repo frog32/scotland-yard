@@ -2,7 +2,7 @@ from Tkinter import *
 from PIL import Image,ImageTk
 
 class SY_GUI(object):
-    def __init__(self):
+    def __init__(self,parent):
 
         self.root = Tk()
         """
@@ -13,11 +13,10 @@ class SY_GUI(object):
         punkt 8 = 88/52
         """
         #e.g. station_arr[1] refers to station nr. 1 on the board
-        self.stations = self.load_stations()
+        self.stations = load_stations()
+        self.myParent = parent
 
-        #self.myParent = parent
-
-        self.myCanvas = Canvas(self.root, width=1200,height=700)
+        self.myCanvas = Canvas(parent, width=1200,height=700)
         self.myCanvas.pack()
 
         """
@@ -52,10 +51,9 @@ class SY_GUI(object):
 
         stations = [None]
 
-        for s in station_list:
-            #stations.append(self.Station(int(s.split(" ")[1]),int(s.split(" ")[2]))
-            stations.append(self.Station(int("12",13))
-                            
+        for s = station_list:
+            stations.append(Station(int(s.split(" ")[1]),int(s.split(" ")[2]))
+
         return stations
         
         
@@ -63,7 +61,7 @@ class SY_GUI(object):
         pass
 
     class Station(object):
-        def __init__(self,x1,y1):
+        def __init__(self,x,y):
             self.x1 = x1
             self.y1 = y1
             self.x2 = x1 + 20
@@ -75,5 +73,4 @@ myapp = SY_GUI(root)
 root.mainloop()
 """
 if __name__ == '__main__':
-    gui = SY_GUI()    
                             
