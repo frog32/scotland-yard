@@ -24,10 +24,8 @@ class Application(object):
             self.polices.append(police)
             self.logger.info('Created %s' % police)
         del positions
-        self.mr_x_module = mr_x_module(self.graph, self.x, self.polices, Move)
-        self.mr_x_module.init_logger(log_mrx)
-        self.police_module = police_module(self.graph, self.x_pub, self.polices, Move)
-        self.police_module.init_logger(log_police)
+        self.mr_x_module = mr_x_module(self.graph, self.x, self.polices, Move, log_mrx)
+        self.police_module = police_module(self.graph, self.x_pub, self.polices, Move, log_police)
         # ready to start game
         self.logger.debug("init completed")
         
@@ -169,6 +167,7 @@ if __name__ == '__main__':
     log_core = 40
     log_mrx = 40
     log_police = 40
+    config_file = 'config.cfg'
     try:
         for arg in sys.argv[1:]:
             if arg[0:9] == '--police=':
@@ -179,15 +178,21 @@ if __name__ == '__main__':
                 log_mrx = int(arg[10:])
             elif arg[0:10] == '--log-pol=':
                 log_police = int(arg[10:])
-            elif arg[-4:] == '.csv':
-                NAMES, DISTANCES = read_file(arg)
+            elif arg[0:9] == '--config=':
+                config_file = arg[9:]
             else:
                 raise exceptions.ValueError()
     except:
         print """
 Explanation comes here
---police=NUMBER number of police
--v              Be verbose.
+--config=FILE       use custom config file. default=config.cfg
+--police=NUMBER     number of police. default=5
+-h                  show this help text
+
+Logging
+--log-lvl=NUMBER    custom log level for main application. default=40
+--log-mrx=NUMBER    custom log level for mr x module. default=40
+--log-pol=NUMBER    custom log level for police module. default=40
 """
         exit()
             
