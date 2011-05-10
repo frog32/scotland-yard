@@ -10,7 +10,7 @@ class Application(object):
     graph = None
     start_positions = []
     def __init__(self, police_module, mr_x_module, police_count=5, log_core=None, log_mrx=None, log_police=None):
-        self.init_logger(log_core)
+        self.init_loggers(log_core, log_mrx, log_police)
         self.load_map()
         self.logger.debug('Created Map')
         self.polices = []
@@ -24,8 +24,8 @@ class Application(object):
             self.polices.append(police)
             self.logger.info('Created %s' % police)
         del positions
-        self.mr_x_module = mr_x_module(self.graph, self.x, self.polices, Move, log_mrx)
-        self.police_module = police_module(self.graph, self.x_pub, self.polices, Move, log_police)
+        self.mr_x_module = mr_x_module(self.graph, self.x, self.polices, Move, self.mr_x_logger)
+        self.police_module = police_module(self.graph, self.x_pub, self.polices, Move, self.police_logger)
         # ready to start game
         self.logger.debug("init completed")
         
@@ -48,15 +48,8 @@ class Application(object):
                         self.logger.info('Mr x geschnappt von %s'% player)
                         return
                     self.x.add_ticket(move.ticket)
-    
-    def load_map(self):
-        self.start_positions = [13, 26, 29, 34, 50, 53, 91, 94, 103, 112, 117, 132, 138, 155, 174, 197, 198]
-        self.graph = nx.MultiGraph()
-        for edge in open('maps/kanten.txt'):
-            bits = edge.replace('\n','').split(' ')
-            self.graph.add_edge(int(bits[0]),int(bits[1]), attr_dict={'ticket':bits[2]})
-    
-    def init_logger(self, level):
+
+    def init_loggers(self, log_core, log_mrx, log_police):
         self.logger = logging.getLogger('start.Application')
         self.logger.setLevel(log_core)
         ch = logging.StreamHandler()
@@ -64,6 +57,29 @@ class Application(object):
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
         
+        self.mr_x_logger = logging.getLogger('mr_x.MrX')
+        self.mr_x_logger.setLevel(log_mrx)
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+        ch.setFormatter(formatter)
+        self.mr_x_logger.addHandler(ch)
+        
+        self.police_logger = logging.getLogger('mr_x.Police')
+        self.police_logger.setLevel(log_police)
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+        ch.setFormatter(formatter)
+        self.police_logger.addHandler(ch)
+        
+        
+
+    def load_map(self):
+        self.start_positions = [13, 26, 29, 34, 50, 53, 91, 94, 103, 112, 117, 132, 138, 155, 174, 197, 198]
+        self.graph = nx.MultiGraph()
+        for edge in open('maps/kanten.txt'):
+            bits = edge.replace('\n','').split(' ')
+            self.graph.add_edge(int(bits[0]),int(bits[1]), attr_dict={'ticket':bits[2]})
+            
 class Move(object):
     TICKETS = ['cab', 'bus', 'underground', 'black']
     def __init__(self, target, ticket):

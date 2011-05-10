@@ -5,20 +5,13 @@ import networkx as nx
 class MrX(object):
     graph = None
     logger = None
-    def __init__(self, graph, mr_x, polices, move_cls):
+    def __init__(self, graph, mr_x, polices, move_cls, logger):
         MrX.graph = graph
         self.mr_x = mr_x
         self.polices = polices
         self.move_cls = move_cls
-    
-    def init_logger(self, level):
-        MrX.logger = logging.getLogger('mr_x.MrX')
-        MrX.logger.setLevel(level)
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
-        ch.setFormatter(formatter)
-        MrX.logger.addHandler(ch)
-    
+        self.logger = logger
+        
     def draw(self, round, who):
         choices = MrX.graph.neighbors(who.get_position())
         MrX.logger.debug('Start Move from %s' % who.get_position())
