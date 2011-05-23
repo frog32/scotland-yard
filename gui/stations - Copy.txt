@@ -1,0 +1,4 @@
+stationNr xPos yPos 
+1 140 25 
+2 357 13 
+3 495 16 
