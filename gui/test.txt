@@ -1,3 +1,5 @@
 test
 hello
 world
+
+stations.append(Station(int(s.split(" ")[1]),int(s.split(" ")[2]))
