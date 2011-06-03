@@ -20,9 +20,10 @@ class SY_GUI(object):
             self.misterX = mister_X
             
         self.visible_moves_mrX = (3,8,13,18)
+        self.num_of_moves = 1
 
-        
-
+        self.color_array = ["white", "black", "red", "green", "blue", "cyan", "magenta"]
+        self.mrX_color = "yellow"
 
         """
         Initialisierung von Tk
@@ -68,23 +69,29 @@ class SY_GUI(object):
         """
         self.myCanvas.create_image(0,0,image=photo,anchor=NW)
 
-
+        """
         #punkt 1      
-        #s = self.stations[7]
+        s = self.stations[7]
         #s.punkt = self.myCanvas.create_oval(s.x1,s.y1,s.x2,s.y2,fill="black")
-        #s.punkt = self.draw_circle(s)
+        s.punkt = self.draw_circle(s)
         #self.stations[7].punkt = self.draw_circle(self.stations[7])
-
+        """
         # Zeichnen der Startpositionen
         
         if self.police:
+            count = 0
             for p in self.police:
+                color = count % (len(self.color_array)-1)
+                
                 s = self.stations[p.moves[0]]
-                s.punkt = self.draw_circle(s)
+                s.punkt = self.draw_circle(s,self.color_array[color])
+
+                count += 1
 
             s = self.stations[self.misterX.moves[0]]
-            s.punkt = self.draw_circle(s,"yellow")
-     
+            #s.punkt = self.draw_circle(s,self.mrX_color)
+            s.punkt = self.draw_star(s,self.mrX_color)
+         
         
         """
         label = Label(self.myContainer1, image=photo)
@@ -96,9 +103,37 @@ class SY_GUI(object):
     # zu zeichnen
     def draw_circle(self,station,color="black"):
         s = station
-        circle = self.myCanvas.create_oval(s.x1,s.y1,s.x2,s.y2,fill=color)
+        x = s.centerX
+        y = s.centerY
+
+        x1 = x - 10
+        y1 = y - 10
+        x2 = x + 10
+        y2 = y + 10
+
+        #circle = self.myCanvas.create_oval(s.x1,s.y1,s.x2,s.y2,fill=color)
+        circle = self.myCanvas.create_oval(x1,y1,x2,y2,fill=color)
         return circle
-                                  
+
+    
+    def draw_star(self,station,color="yellow"):
+        s = station
+
+        x = s.centerX
+        y = s.centerY
+        """
+        x1 = x-5 ; y1 = y+10; x2 = x;    y2 = y-10
+        x3 = x+5 ; y3 = y+10; x4 = x-10; y4 = y-2.5
+        x5 = x+10; y5 = y-2.5;x6 = x1; y6 = y1
+        """
+        x1 = x-15 ; y1 = y+20; x2 = x;    y2 = y-20
+        x3 = x+15 ; y3 = y+20; x4 = x-20; y4 = y-5
+        x5 = x+20; y5 = y-5  ;x6 = x1; y6 = y1
+        
+        star = self.myCanvas.create_polygon(x1,y1,x2,y2,x3,y3,x4,y4,x5,y5,x6,y6,fill=color)
+        return star
+    
+    
     def load_stations(self):
         station_file = open('stations.txt','r')
         station_list = station_file.readlines()
@@ -120,15 +155,20 @@ class SY_GUI(object):
         return stations
         
         
-    def move(self,von,nach,color="black"):
+    def move(self,von,nach,color="black",misterX=False):
 
         v = self.stations[von].punkt
         n = self.stations[nach]
         
         self.myCanvas.delete(v)
+        self.myCanvas.delete(n.punkt)
         
         if v:
-            n.punkt = self.myCanvas.create_oval(n.x1,n.y1,n.x2,n.y2,fill=color)
+            if misterX:
+                n.punkt = self.draw_star(n,color)
+            else:
+                #n.punkt = self.myCanvas.create_oval(n.x1,n.y1,n.x2,n.y2,fill=color)
+                n.punkt = self.draw_circle(n,color)
 
         self.stations[von].punkt= None
 
@@ -146,29 +186,38 @@ class SY_GUI(object):
 
     def load_image(self,imagePath):
         return Image.open(imagePath)
-
-    """
+    
     def draw(self):
-        if self.num_of_moves % self.num_of_players not 0:
-            von = self.police[self.num_of_moves - 1].moves[-2]
-            nach = self.police[self.num_of_moves - 1].moves[-1]
+        player = self.num_of_moves % self.num_of_players
 
-            self.move(von,nach)
+        if player != 0:
+            von = self.police[player - 1].moves[-2]
+            nach = self.police[player - 1].moves[-1]
+
+            """nur fuer die tests"""
+            del self.police[player - 1].moves[-2]
+            del self.police[player - 1].moves[-1]
+            """nur fuer die tests"""
+            
+            self.move(von,nach,self.color_array[player-1])
             self.num_of_moves += 1
         else:
             von = self.misterX.moves[-2]
-            nach = self.misterX0.moves[-1]
+            nach = self.misterX.moves[-1]
 
-            self.move(von,nach,"grey")
+            """nur fuer die tests"""
+            del self.misterX.moves[-2]
+            del self.misterX.moves[-1]
+            """nur fuer die test"""
+            
+            self.move(von,nach,"yellow",True)
             self.num_of_moves += 1
-    """
+    
     
     class Station(object):
         def __init__(self,x,y,name):
-            self.x1 = x - 10
-            self.y1 = y - 10
-            self.x2 = x + 10
-            self.y2 = y + 10
+            self.centerX = x
+            self.centerY = y
             self.name = name
             self.punkt = None
 
@@ -180,14 +229,14 @@ class SY_GUI(object):
 
     #dummy Class zum Test
 class Player(object):
-    def __init__(self, startPos):
-        self.moves = [startPos]
+    def __init__(self, moves):
+        self.moves = moves
             
         
-q = Player(1)
-w = Player(3)
-e = Player(5)
-r = Player(7)
+q = Player([1,18,43,1,18])
+w = Player([3,11,22,3,11])
+e = Player([5,16,28,5,16])
+r = Player([7,17,42,7,17])
 police = [q,w,e]
 mrX = r  
 
