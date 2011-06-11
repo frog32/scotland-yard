@@ -1,0 +1,77 @@
+%GUI Documentation%
+
+Bei der graphischen Darstellung des Scotland Yard Programmes handelt es sich im eigentlichen Sinne nicht um 
+ein GUI, da der User nicht mit ihm über die Maus oder die Tastatur interagieren kann. Es ist einfach eine
+grafische Abbildung von dem, was sich auf dem Codelevel abspielt. Im Gebilde des MVC Design Patterns bildet 
+es also die View-Komponente die vom Controller, welcher das ganze Spiel orchestriert, aufgerufen wird.
+
+Technologie
+-----------
+Da das Programm in Python programmiert wurde, musste auch das GUI in dieser Sprache realisiert werden. Das Problem
+war nicht, eine Technologie zu finden, sondern aus den dutzenden Möglichkeiten eine Auszusuchen. Da ich noch
+nie ein GUI in Python programmiert habe, habe ich mich für den nach meiner Ansicht klassischen Weg mit 
+"TKinter" entschieden, da dies das Standart-GUI Tool für Python ist, welches auch gleich mit Python mitgeliefert
+wird und zu dem es reichlich an Dokumentation gibt. 
+
+Tkinter ist das Python Interface zum Tk GUI toolkit, deswegen auch der Name Tkinter. 
+
+
+Vorgehen
+--------
+Bevor es ans Impelentieren ging, legte ich einmal fest, was die graphische Darstellungen eigentlich alles können muss
+und unterteilte dies in 4 einfach formulierte Ziele
+
+1. Anzeigen des Bildes
+2. Zeichnen einer Spielfigur
+3. Bewegen der Spielfigur zwischen verschiedenen Punkten auf der Karte
+4. Der Controller muss mit dem Aufruf einer Funktion einen Spielzug ausführen können
+
+Zuerst musste ich mir dann mal einen Überblick verschaffen, wie Tkinter überhaupt funktioniert und was es alles kann. 
+Dannach ging es ans Herausfinden, wie die einzelnen Punkte implementiert werden koennten. Die ersten beiden Punkte waren relativ
+trivial, da es sich um Dinge handelt die zu den Grundaufgaben eines GUI Toolkits gehören. Punkt 3 war ein wenig Anspruchsvoller,
+da ich nun die Koordinaten der einzelnen Punkte brauchte. Dies löste ich, indem ich sie in einem Textfile abspeicherte und
+eine spezielle innere Klasse kreierte, die jeweils eine Station darstellt. Zudem musste sichergestellt werden, das sich keine 
+logischen Fehler einschlichen, wenn eine Spielfigur sich von einem Punkt an einen anderen bewegt. Es darf zum Beispiel nicht 
+möglich sein, eine Figur von einem Punkt aus zu verschieben, an dem sich gar keine Figur befindet.Im vierten Punkt und generell 
+im Abschluss dieses Teilprojektes ging es dann darum die Möglichkeiten die die grafische Darstellung nun bot, der Aussenwelt 
+in möglichst klarer und einfacher Weise anzubieten. Da merkte ich, dass vieles noch zu kompliziert formuliert war und 
+verschob einiges an schon erstelltem Code in neue Funktionen, die die Klasse im allgemeinen übersichtlicher
+und leichter verständlich machen sollten .
+
+
+Kurze Anleitung zum Gebrauch der grafischen Darstellung
+--------------------------------------------------------
+- Systemvoraussetzungen
+	- Python 2.7 und PIL 1.1.7 
+
+	  PIL (Python Image Library) kann von 'http://www.pythonware.com/products/pil/' bezogen werden.
+
+- Der ganzen Code der grafischen Darstellung befindet sich im File "scotland_yard_gui.py". Die meisten Funktionen
+  und Code-Abschnitte sollten selbsterklaerend oder dokumentiert sein.
+
+
+
+Verwendung des GUIs
+-------------------
+
+- Öffnen des Python Interpreters--> cmd -> python
+
+- Importieren des Packetes 	--> from scotland_yard_gui import *
+
+- Instanzieren der GUI Klasse 	--> gui = SY_GUI(police_Array, mister_X,picture_Width,picture_Height,picture)
+	- Wichtig sind die Argumente 'police_Array' und 'mister_X', die Restlichen Argumente sind nur wichtig,
+	  wenn man ein Bild verwenden will, dessen Dimensionen sich von Standartbild unterscheiden. Die letzten
+	  3 Argumente müssen also nicht übergeben werden.
+	
+	- Wichtig ist, dass jeder Spieler eine Instanzvariabel 'moves' vom Typ List besitzt und das an dem ersten Index ein
+	  Int-Wert gesetzt ist, der den Startpunkt dieser Figur bestimmt.
+
+- Bewegen der Figuren
+	- 1. Mit der move Funktion	--> gui.move(von,nach,farbe)
+	  Die Parameter 'von' und 'nach' bestimmen von wo nach wo eine Figur sich bewegen soll.
+	  Natürlich muss sich auf dem 'von' Feld schon eine Figur befinden. Color ist default Schwarz.
+
+	- 2. Mit der draw Funktion	--> gui.draw()
+	  Das Spielt sollte eigentlich mit dieser Funktion gespielt werden. Die Funktion schaut auf die letzten 2 Einträge
+	  der Instanzvariabel move die den Typ List hat und bewegt so die Spieler. Ausserdem wird so sichergestellt, dass jeder
+	  Spieler, dem zu Anfang eine eigene Farbe zugewiesen wurde, diese auch behält

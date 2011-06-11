@@ -38,19 +38,20 @@ class SY_GUI(object):
 
         
         """
-        http://infohost.nmt.edu/tcc/help/pubs/tkinter/canvas.html#create_oval
-        jeder Punkt auf dem Spielbrett braucht eine x1/y1 Angabe. Dieser Punk
-        befindet sich in der mitte (siehe link). x2 = x1+20, y2 = x2+20
-
-        punkt 8 = 88/52
+        Laedt alle Stationen in den 'stations' Array
+        #e.g. stations[1] bezieht sich auf Punkt 1 auf dem Spielbrett
         """
-        #e.g. station_arr[1] refers to station nr. 1 on the board
         self.stations = self.load_stations()
 
-        #self.myParent = parent
+        """
+            -----------------------
+            Erstellen des Canvas
+            -----------------------
+        """
 
         self.myCanvas = Canvas(self.root, width=1200,height=700)
         self.myCanvas.pack()
+
 
         """
             -----------------------
@@ -58,16 +59,17 @@ class SY_GUI(object):
             -----------------------
         """ 
 
-        #self.image = Image.open("london.jpg")
         self.image = self.load_image(picture)
         photo = ImageTk.PhotoImage(self.image)
         self.myCanvas.image = photo
 
+
         """
-        #anchor option setzt 0 0 koordinate nach oben links (NW), so dass
-        #ganzes bild angezeigt wird
+        anchor option setzt 0 0 koordinate nach oben links (NW), so dass
+        ganzes bild angezeigt wird
         """
         self.myCanvas.create_image(0,0,image=photo,anchor=NW)
+
 
         """
         #punkt 1      
@@ -76,7 +78,12 @@ class SY_GUI(object):
         s.punkt = self.draw_circle(s)
         #self.stations[7].punkt = self.draw_circle(self.stations[7])
         """
-        # Zeichnen der Startpositionen
+
+        """
+            -----------------------
+            Zeichnen der Startpositionen
+            -----------------------
+        """ 
         
         if self.police:
             count = 0
@@ -89,18 +96,11 @@ class SY_GUI(object):
                 count += 1
 
             s = self.stations[self.misterX.moves[0]]
-            #s.punkt = self.draw_circle(s,self.mrX_color)
+            
             s.punkt = self.draw_star(s,self.mrX_color)
          
-        
-        """
-        label = Label(self.myContainer1, image=photo)
-        label.image = photo
-        label.pack()
-        """
 
-    # Diese Funktion wird gebraucht um die Kreise, welche die Polizisten und Mr.X darstellt
-    # zu zeichnen
+
     def draw_circle(self,station,color="black"):
         s = station
         x = s.centerX
@@ -121,11 +121,7 @@ class SY_GUI(object):
 
         x = s.centerX
         y = s.centerY
-        """
-        x1 = x-5 ; y1 = y+10; x2 = x;    y2 = y-10
-        x3 = x+5 ; y3 = y+10; x4 = x-10; y4 = y-2.5
-        x5 = x+10; y5 = y-2.5;x6 = x1; y6 = y1
-        """
+
         x1 = x-15 ; y1 = y+20; x2 = x;    y2 = y-20
         x3 = x+15 ; y3 = y+20; x4 = x-20; y4 = y-5
         x5 = x+20; y5 = y-5  ;x6 = x1; y6 = y1
@@ -148,9 +144,6 @@ class SY_GUI(object):
             name = "Station " + s.split(" ")[0]
 
             stations.append(self.Station(x1,y1,name))
-            #stations.append(self.Station(int(s.split(" ")[1]),int(s.split(" ")[2]),"Station " + s.split(" ")[0]))
-            
-            #stations.append(self.Station(int("12"),int("13")))
                             
         return stations
         
@@ -167,7 +160,6 @@ class SY_GUI(object):
             if misterX:
                 n.punkt = self.draw_star(n,color)
             else:
-                #n.punkt = self.myCanvas.create_oval(n.x1,n.y1,n.x2,n.y2,fill=color)
                 n.punkt = self.draw_circle(n,color)
 
         self.stations[von].punkt= None
