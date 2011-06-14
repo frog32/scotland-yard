@@ -36,7 +36,7 @@ class SY_GUI(object):
         Initialisierung von Tk
         """        
         self.root = Tk()
-        self.root.bind("<Return>",self.alert)
+        self.root.bind("<Return>",self.draw)
 
         """
         Will man ein kleineres Bild als das Originalbild verwenden, kann man die Angaben in folgenden Variablen

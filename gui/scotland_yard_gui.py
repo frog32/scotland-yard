@@ -1,5 +1,6 @@
 from Tkinter import *
 from PIL import Image,ImageTk
+import time
 
 class SY_GUI(object):
 
@@ -224,7 +225,7 @@ class Player(object):
     def __init__(self, moves):
         self.moves = moves
             
-        
+  
 q = Player([1,18,43,1,18])
 w = Player([3,11,22,3,11])
 e = Player([5,16,28,5,16])
@@ -232,9 +233,23 @@ r = Player([7,17,42,7,17])
 police = [q,w,e]
 mrX = r  
 
+#x = SY_GUI(police,mrX)
 """
 root = Tk()
-myapp = SY_GUI(root)
+myapp = SY_GUI(police,mrX)
 root.mainloop()
+
+
+
+if __name__ == '__main__':
+    q = Player([1,18,43,1,18])
+    w = Player([3,11,22,3,11])
+    e = Player([5,16,28,5,16])
+    r = Player([7,17,42,7,17])
+    police = [q,w,e]
+    mrX = r
+
+    x = SY_GUI(police,mrX)
+    time.sleep(6)
+    print "after sleep"
 """
-#if __name__ == '__main__':
