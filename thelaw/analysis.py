@@ -1,4 +1,4 @@
-from sets import Set
+#from sets import Set
 import networkx as nx
 from start import Move
 
@@ -189,7 +189,6 @@ def try_to_escape(graph, cop, mr_x, move_cls, no_goes):
                 target = neighbor
                 success = True
     if not success:
-        print('screw you guys, im going home')
         if not cop.tickets_underground == 0:
             return CopMove(cop, neighbors[0], 'underground')
         elif not cop.tickets_cab == 0:
