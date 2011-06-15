@@ -194,14 +194,14 @@ class SY_GUI(object):
 
     
     def draw(self, event=None):
-
+        from start import EndOfGame
         try:
             self.app.play_round()
-        except:
+        except EndOfGame, e:
+            print e
             exit()
             
-        player = self.num_of_moves % self.num_of_players
-        #player = self.app.active_player()
+        player = self.app.active_player
 
         
         if player != 0:

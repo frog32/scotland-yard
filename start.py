@@ -24,31 +24,43 @@ class Application(object):
             self.polices.append(police)
             self.logger.info('Created %s' % police)
         del positions
+        self.players = [self.x] + self.polices
         self.mr_x_module = mr_x_module(self.graph, self.x, self.polices, Move, self.mr_x_logger)
         self.police_module = police_module(self.graph, self.x_pub, self.polices, Move, self.police_logger)
+        # init gui
+        self.round = 0
+        self.active_player = len(self.players)
         # ready to start game
         self.logger.debug("init completed")
         
     def play(self):
-        players = [self.x] + self.polices
-        for i in range(22):
-            self.logger.info("round %s" % i)
-            for player in players:
-                if player.is_x:
-                    module = self.mr_x_module
-                else:
-                    module = self.police_module
-                move = module.draw(i,player)
-                player.draw(move, self.graph)
-                self.logger.info("%s went to %s by %s" % (player, move.target, move.ticket))
-                if player.is_x:
-                    pass
-                else:
-                    if player.get_position() == self.x.get_position():
-                        self.logger.info('Mr x geschnappt von %s'% player)
-                        return
-                    self.x.add_ticket(move.ticket)
-
+        while True:
+            self.play_round()
+    
+    def play_round(self):
+        self.active_player += 1
+        if self.active_player >= len(self.players):
+            self.round += 1
+            self.active_player = 0
+            self.logger.info("round %s" % self.round)
+            if self.round > 22:
+                raise EndOfGame('Mr.X hat gewonnen.')
+        player = self.players[self.active_player]
+        if player.is_x:
+            module = self.mr_x_module
+        else:
+            module = self.police_module
+        move = module.draw(self.round,player)
+        player.draw(move, self.graph)
+        self.logger.info("%s went to %s by %s" % (player, move.target, move.ticket))
+        if player.is_x:
+            pass
+        else:
+            if player.get_position() == self.x.get_position():
+                self.logger.info('Mr x geschnappt von %s'% player)
+                raise EndOfGame('Police hat gewonnen.')
+            self.x.add_ticket(move.ticket)
+        
     def init_loggers(self, log_core, log_mrx, log_police):
         self.logger = logging.getLogger('start.Application')
         self.logger.setLevel(log_core)
@@ -134,6 +146,9 @@ class Player(PlayerGeneric):
         self.x_pub = PlayerX(self.name)
         return self.x_pub
     
+    def is_visible(self):
+        return len(self.moves) in self.x_pub.VISIBLE_MOVES
+        
     def add_ticket(self, ticket_type):
         ticket_attr = 'tickets_%s' % ticket_type
         ticket_count = getattr(self,ticket_attr)
@@ -165,12 +180,21 @@ class Player(PlayerGeneric):
             return self.moves[-1].target
         return self.start_node
     
+    def get_old_position(self):
+        if len(self.moves) >1:
+            return self.moves[-2].target
+        return self.start_node
+    
 class InvalidMoveError(exceptions.Exception):
+    pass
+
+class EndOfGame(exceptions.Exception):
     pass
 
 
 def random_select(position_list):
     r = random.randint(0,len(position_list)-1)
+    # r = 0
     position = position_list[r]
     del position_list[r]
     return position, position_list
