@@ -147,7 +147,7 @@ class Status(object):
             else:
                 if status.polices[self.next_player].position == polices[self.next_player].get_position():
                     return status.find_current_child(mr_x, polices)
-        MrX.logger.error("didn't find current state")
+        MrX.logger.info("didn't find current state")
         return Status(PlayerLight(mr_x.get_position()),list(PlayerLight(police.get_position()) for police in polices), -1)
 
 class PlayerLight(object):

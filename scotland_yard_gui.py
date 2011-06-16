@@ -217,7 +217,7 @@ class SY_GUI(object):
             if self.misterX.is_visible():
                 self.move(von,nach,"yellow",True)
             else:
-                self.move(von,nach,"grey",True)
+                self.move(von,nach,"black",True)
             self.num_of_moves += 1
     
     
